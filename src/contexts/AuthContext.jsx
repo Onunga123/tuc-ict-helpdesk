@@ -1,19 +1,27 @@
 import { createContext, useContext, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 // Create the Auth context
 const AuthContext = createContext();
 
-// Provider component to wrap the app
+// Provider component
 export function AuthProvider({ children }) {
+  const navigate = useNavigate();
   const [user, setUser] = useState(null);
 
-  // Login function with mock role assignment based on email
+  // Login function
   const login = (email) => {
     if (!email) return;
 
-    // normalize and sanitize email (remove mailto: if user pasted a link)
+    // Normalize email
     const cleaned = email.replace(/^mailto:/i, "").trim().toLowerCase();
 
+    if (!cleaned.endsWith("@tuc.ac.ke")) {
+      alert("Please use your institutional email (@tuc.ac.ke)");
+      return;
+    }
+
+    // Determine role
     let role = "STUDENT";
     let roleLabel = "Student";
 
@@ -28,21 +36,44 @@ export function AuthProvider({ children }) {
       roleLabel = "Staff";
     }
 
-    setUser({ email: cleaned, role, roleLabel });
+    // Set user
+    const newUser = { email: cleaned, role, roleLabel, name: "" };
+    setUser(newUser);
+
+    // Navigate based on role
+    switch (role) {
+      case "ADMIN":
+        navigate("/admin");
+        break;
+      case "ICT_OFFICER":
+        navigate("/ict");
+        break;
+      case "STAFF":
+        navigate("/staff");
+        break;
+      default:
+        navigate("/student");
+        break;
+    }
   };
 
   // Logout function
   const logout = () => {
     setUser(null);
+    navigate("/");
   };
 
-  // Provide user, login, and logout to children
+  // Update user (for profile management)
+  const updateUser = (updated) => {
+    setUser(updated);
+  };
+
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider value={{ user, login, logout, updateUser }}>
       {children}
     </AuthContext.Provider>
   );
 }
 
-// Custom hook to access Auth context easily
+// Custom hook
 export const useAuth = () => useContext(AuthContext);

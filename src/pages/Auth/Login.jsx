@@ -1,49 +1,44 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 
-function Login() {
+export default function Login() {
   const [email, setEmail] = useState("");
   const { login } = useAuth();
-  const navigate = useNavigate();
 
-  const handleLogin = () => {
-    if (!email) return; // prevent empty login
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!email) return;
 
-    const lowerEmail = email.toLowerCase(); // normalize email
-    login(lowerEmail); // pass lowercase to AuthContext
-
-    // Navigate based on role inferred from email
-    if (lowerEmail.includes("admin")) navigate("/admin");
-    else if (lowerEmail.includes("ict")) navigate("/ict");
-    else if (lowerEmail.includes("staff")) navigate("/staff");
-    else navigate("/student");
+    login(email); // AuthContext handles email validation & role navigation
   };
 
   return (
-    <div className="h-screen flex items-center justify-center bg-gray-100">
-      <div className="bg-white p-8 rounded shadow w-96">
-        <h2 className="text-2xl font-bold mb-6 text-center">
-          ICT Help Desk Login
-        </h2>
+    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+      <form
+        onSubmit={handleSubmit}
+        className="bg-white p-8 rounded shadow w-96 space-y-4"
+      >
+        <h2 className="text-2xl font-bold text-center">ICT Help Desk Login</h2>
 
-        <input
-          type="email"
-          placeholder="Enter institutional email"
-          className="w-full border p-2 rounded mb-4"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
+        <div>
+          <label className="block mb-1 font-medium">Institutional Email</label>
+          <input
+            type="email"
+            placeholder="you@tuc.ac.ke"
+            className="w-full border px-3 py-2 rounded"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+        </div>
 
         <button
-          onClick={handleLogin}
-          className="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700"
+          type="submit"
+          className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
         >
           Login
         </button>
-      </div>
+      </form>
     </div>
   );
 }
-
-export default Login;
